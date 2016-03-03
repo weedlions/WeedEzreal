@@ -62,6 +62,10 @@ function initMenu()
 
   Config:addSubMenu("Killsteal Settings", "settSteal")
   Config.settSteal:addParam("useq", "Use Q for Killsteal", SCRIPT_PARAM_ONOFF, true)
+  Config.settSteal:addParam("usew", "Use W for Killsteal", SCRIPT_PARAM_ONOFF, true)
+  Config.settSteal:addParam("user", "Use R for Killsteal", SCRIPT_PARAM_ONOFF, true)
+  Config.settSteal:addParam("Blank", "Max Range for R Steal", SCRIPT_PARAM_INFO, "")
+  Config.settSteal:addParam("range", "Default value = 1000", SCRIPT_PARAM_SLICE, 200, 0, 5000, 0)
 
   Config:addSubMenu("Draw Settings", "settDraw")
   Config.settDraw:addParam("qrange", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
@@ -70,6 +74,9 @@ function initMenu()
 
   Config:addSubMenu("Prediction Settings", "settPred")
   Config.settPred:addParam("pred", "Select Prediction", SCRIPT_PARAM_LIST, 1, predTable)
+  
+  Config:addSubMenu("Key Settings", "settKey")
+  Config.settSteal:addParam("Blank", "Use Orbwalker Keys", SCRIPT_PARAM_INFO, "")
 
   UOL:AddToMenu(scriptConfig("OrbWalker", "OrbWalker"))
 
@@ -107,8 +114,9 @@ function activePreds()
     loadedHP, currentPred = true, HPrediction()
     Q = currentPred.Presets["Ezreal"]["Q"]
     W = currentPred.Presets["Ezreal"]["W"]
+    R = currentPred.Presets["Ezreal"]["R"]
     loadedSP, loadedVP = false
-    end
+  end
 
 end
 
@@ -137,10 +145,21 @@ function killSteal()
 
   for i=1, heroManager.iCount do
     local enemy = heroManager:getHero(i)
-    if(Config.settSteal.useq and myHero:CanUseSpell(_Q) == READY and enemy.health < (getDmg("Q", enemy, myHero)+((myHero.damage)*1.1))-Config.settLC.dmgbuff) and not enemy.dead and enemy.bTargetable then
+    if(Config.settSteal.useq and myHero:CanUseSpell(_Q) == READY and enemy.health < (getDmg("Q", enemy, myHero)+((myHero.damage)*1.1)+(myHero.ap*0.4)) and not enemy.dead and enemy.bTargetable) then
       local castx, castz = predict(enemy, "Q")
       if(castx ~= nil) then CastSpell(_Q, castx, castz) end
     end
+
+    if(Config.settSteal.usew and myHero:CanUseSpell(_W) == READY and enemy.health < (getDmg("W", enemy, myHero)+((myHero.ap)*0.8)) and not enemy.dead and enemy.bTargetable) then
+      local castx, castz = predict(enemy, "W")
+      if(castx ~= nil) then CastSpell(_W, castx, castz) end
+    end
+
+    if(Config.settSteal.user and myHero:CanUseSpell(_R) == READY and enemy.health < (getDmg("R", enemy, myHero)+((myHero.ap)*0.9)+(myHero.damage)) and not enemy.dead and enemy.bTargetable) then
+      local castx, castz = predict(enemy, "R")
+      if(castx ~= nil) then CastSpell(_R, castx, castz) end
+    end
+
   end
 
 end
@@ -153,7 +172,7 @@ function laneClearQ()
 
     for i, minion in pairs(minionmanager.objects) do
 
-      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1))) then
+      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1)+(myHero.ap*0.4))) then
 
         --PrintChat("LCQ")
         local castx, castz = predict(minion, "Q")
@@ -166,7 +185,7 @@ function laneClearQ()
 
     for i, minion in pairs(minionmanager.objects) do
 
-      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and (minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1)) or (minion.health > (getDmg("Q", minion, myHero)+((myHero.damage)*1.1))+50))) then
+      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and (minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1)+(myHero.ap*0.4)) or (minion.health > (getDmg("Q", minion, myHero)+((myHero.damage)*1.1))+50))) then
 
         --PrintChat("LCQ")
         local castx, castz = predict(minion, "Q")
@@ -185,7 +204,7 @@ function lastHitQ()
 
     for i, minion in pairs(minionmanager.objects) do
 
-      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1))) then
+      if(minion ~= nil and minion.bTargetable and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health < (getDmg("Q", minion, myHero)+((myHero.damage)*1.1)+(myHero.ap*0.4))) then
 
         --PrintChat("LHQ")
         local castx, castz = predict(minion, "Q")
@@ -279,6 +298,11 @@ function GetVPred(target, spell)
     if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < 900 then
       return CastPosition.x, CastPosition.z
     end
+  elseif(spell == "R") then
+    local CastPosition, HitChance, Position = currentPred:GetLineCastPosition(target, 1, 100, 20000, 2000, myHero, false)
+    if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < Config.settSteal.range then
+      return CastPosition.x, CastPosition.z
+    end
   else return nil, nil
   end
 
@@ -296,6 +320,11 @@ function GetSPred(target, spell)
     if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < 900 then
       return CastPosition.x, CastPosition.z
     end
+  elseif(spell == "R") then
+    local CastPosition, HitChance, Position = currentPred:Predict(target, 20000, 20000, 1, 100, false, myHero)
+    if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < Config.settSteal.range then
+      return CastPosition.x, CastPosition.z
+    end
   else return nil, nil
   end
 
@@ -311,6 +340,11 @@ function GetHPred(target, spell)
   elseif(spell == "W") then
     local CastPosition, HitChance = currentPred:GetPredict(W, target, myHero)
     if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < 900 then
+      return CastPosition.x, CastPosition.z
+    end
+  elseif(spell == "R") then
+    local CastPosition, HitChance = currentPred:GetPredict(R, target, myHero)
+    if CastPosition and HitChance >= 2 and GetDistance(CastPosition) < Config.settSteal.range then
       return CastPosition.x, CastPosition.z
     end
   else return nil, nil
