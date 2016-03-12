@@ -4,7 +4,7 @@ local myHero = GetMyHero()
 local predTable = {"None"}
 local currentPred = nil
 local healactive = false
-local Version = 1.002
+local Version = 1.003
 local Heal, Barrier = nil
 local OrbWalkers = {}
 local LoadedOrb = nil
@@ -98,10 +98,10 @@ function initMenu()
   Config.settSteal:addParam("minrange", "Min Range for R Steal", SCRIPT_PARAM_SLICE, 1000, 0, 5000, 0)
   
   Config:addSubMenu("Tear Stacking Settings", "settTear")
-  Config.settTear:addParam("useq", "Use Q for Stacking", SCRIPT_PARAM_ONOFF, true)
+  Config.settTear:addParam("useq", "Use Q for Stacking", SCRIPT_PARAM_ONOFF, false)
   Config.settTear:addParam("manaq", "Min % Mana for Q", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
   Config.settTear:addParam("Blank", "", SCRIPT_PARAM_INFO, "")
-  Config.settTear:addParam("usew", "Use W for Stacking", SCRIPT_PARAM_ONOFF, true)
+  Config.settTear:addParam("usew", "Use W for Stacking", SCRIPT_PARAM_ONOFF, false)
   Config.settTear:addParam("manaw", "Min % Mana for W", SCRIPT_PARAM_SLICE, 45, 0, 100, 0)
 
   Config:addSubMenu("Auto Heal/Auto Barrier Settings", "settAHeal")
