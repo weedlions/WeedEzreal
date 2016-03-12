@@ -4,11 +4,12 @@ local myHero = GetMyHero()
 local predTable = {"None"}
 local currentPred = nil
 local healactive = false
-local Version = 1.001
+local Version = 1.002
 local Heal, Barrier = nil
 local OrbWalkers = {}
 local LoadedOrb = nil
 local modeTable = {""}
+local store = {}
 
 if myHero.charName ~= "Ezreal" then return end
 
@@ -95,6 +96,13 @@ function initMenu()
   Config.settSteal:addParam("user", "Use R for Killsteal", SCRIPT_PARAM_ONOFF, true)
   Config.settSteal:addParam("maxrange", "Max Range for R Steal", SCRIPT_PARAM_SLICE, 3000, 0, 5000, 0)
   Config.settSteal:addParam("minrange", "Min Range for R Steal", SCRIPT_PARAM_SLICE, 1000, 0, 5000, 0)
+  
+  Config:addSubMenu("Tear Stacking Settings", "settTear")
+  Config.settTear:addParam("useq", "Use Q for Stacking", SCRIPT_PARAM_ONOFF, true)
+  Config.settTear:addParam("manaq", "Min % Mana for Q", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
+  Config.settTear:addParam("Blank", "", SCRIPT_PARAM_INFO, "")
+  Config.settTear:addParam("usew", "Use W for Stacking", SCRIPT_PARAM_ONOFF, true)
+  Config.settTear:addParam("manaw", "Min % Mana for W", SCRIPT_PARAM_SLICE, 45, 0, 100, 0)
 
   Config:addSubMenu("Auto Heal/Auto Barrier Settings", "settAHeal")
   Config.settAHeal:addParam("active", "Use Auto Heal/Barrier", SCRIPT_PARAM_ONOFF, true)
@@ -142,12 +150,36 @@ function OnTick()
 
   killSteal()
   if Config.settAHeal.active then autoHeal() end
+  if Config.settTear.useq or Config.settTear.usew then stackTear() end
 
 end
 
 --MODES-MODES-MODES--
 --MODES-MODES-MODES--
 --MODES-MODES-MODES--
+
+function stackTear()
+
+  local target = GetTarget()
+
+  if not myHero:CanUseSpell(_Q) == READY and not myHero:CanUseSpell(_W) == READY then return end
+  if target then return end
+  
+
+  for i, minion in pairs(minman.objects) do
+
+    if minion.valid and not minion.dead and minion.visible then
+
+      return
+
+    end
+    
+  end
+  
+  if Config.settTear.useq and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaq and myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, myHero.pos.x, myHero.pos.z) end
+  if Config.settTear.usew and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaw and myHero:CanUseSpell(_W) == READY then CastSpell(_W, myHero.pos.x, myHero.pos.z) end
+
+end
 
 function autoHeal()
 
