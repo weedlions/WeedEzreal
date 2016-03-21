@@ -1,10 +1,18 @@
+--                     __________________
+--  ___      _________________  /__  /__(_)____________
+--  __ | /| / /  _ \  _ \  __  /__  /__  /_  __ \_  __ \
+--  __ |/ |/ //  __/  __/ /_/ / _  / _  / / /_/ /  / / /
+--  ____/|__/ \___/\___/\__,_/  /_/  /_/  \____//_/ /_/
+
+
+
 local ts
 local minman
 local myHero = GetMyHero()
 local predTable = {"None"}
 local currentPred = nil
 local healactive = false
-local Version = 1.003
+local Version = 1.004
 local Heal, Barrier = nil
 local OrbWalkers = {}
 local LoadedOrb = nil
@@ -96,7 +104,7 @@ function initMenu()
   Config.settSteal:addParam("user", "Use R for Killsteal", SCRIPT_PARAM_ONOFF, true)
   Config.settSteal:addParam("maxrange", "Max Range for R Steal", SCRIPT_PARAM_SLICE, 3000, 0, 5000, 0)
   Config.settSteal:addParam("minrange", "Min Range for R Steal", SCRIPT_PARAM_SLICE, 1000, 0, 5000, 0)
-  
+
   Config:addSubMenu("Tear Stacking Settings", "settTear")
   Config.settTear:addParam("useq", "Use Q for Stacking", SCRIPT_PARAM_ONOFF, false)
   Config.settTear:addParam("manaq", "Min % Mana for Q", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
@@ -164,7 +172,7 @@ function stackTear()
 
   if not myHero:CanUseSpell(_Q) == READY and not myHero:CanUseSpell(_W) == READY then return end
   if target then return end
-  
+
 
   for i, minion in pairs(minman.objects) do
 
@@ -173,11 +181,20 @@ function stackTear()
       return
 
     end
+
+  end
+
+
+  for SLOT = ITEM_1, ITEM_6 do
+  
+    if myHero:GetSpellData(SLOT).name == "TearsDummySpell" or myHero:GetSpellData(SLOT).name == "ManamuneDummySpell" then
+    
+      if Config.settTear.useq and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaq and myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, myHero.pos.x, myHero.pos.z) end
+      if Config.settTear.usew and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaw and myHero:CanUseSpell(_W) == READY then CastSpell(_W, myHero.pos.x, myHero.pos.z) end
+
+    end
     
   end
-  
-  if Config.settTear.useq and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaq and myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, myHero.pos.x, myHero.pos.z) end
-  if Config.settTear.usew and ((myHero.mana/myHero.maxMana)*100) > Config.settTear.manaw and myHero:CanUseSpell(_W) == READY then CastSpell(_W, myHero.pos.x, myHero.pos.z) end
 
 end
 
